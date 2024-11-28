@@ -1,0 +1,111 @@
+removeReservedChars;
+
+// Adding Anime title
+if (AnimeID == 10729)
+ add AnimeTitle ' ';
+else if (AnimeTitleRomaji)
+ add AnimeTitleRomaji ' ';
+else if (AnimeTitleEnglish)
+ add AnimeTitleEnglish ' ';
+else
+ add AnimeTitle ' ';
+add '- ' EpisodePrefix;
+
+// Adding Episodenumber
+if (EpisodeCount <= 9)
+ add EpisodeNumber pad 10;
+else
+ add EpisodeNumber pad EpisodeCount;
+if (Version > 1)
+    add 'v' Version;
+add ' ';
+
+//if (DubLanguages has Japanese and SubLanguages and not SubLanguages has English)
+// add '[RAW]';
+
+// We dealing with a RAW, or what?
+if (DubLanguages has Japanese and not SubLanguages)
+ add '[RAW]';
+else if (not SubLanguages has English and not DubLanguages has English)
+ add '[UNK]';
+ 
+// So... is this a no credits opening or ending then?
+if (OldFilename contains 'NCED' or OldFilename contains 'NCOP')
+  add ' [NC] ';
+  
+if (GroupShort)
+    add '[' GroupShort '] ';
+else if (GroupLong)
+    add '[' GroupLong '] ';
+add '(' Width 'x' Height ' ' Source ' ' videocodecshort;
+if (BitDepth == 10)
+ add ' ' BitDepth '-bit';
+add ') ';
+add '[' CRCUpper ']';
+if (Restricted)
+    if (Censored)
+        add ' [Censored]';
+    else
+        add ' [Uncensored]';
+else if (Censored)
+ add ' [Censored]';
+ 
+// Edge case bullshit
+if (OldFilename contains "Director's cut" or OldFilename contains "Director's_Cut" or OldFilename contains "DirectorsCut")
+    add '-DirectorsCut';
+
+
+// Replacement rules (cleanup)
+replace ' ' '_'; // replace spaces with underscores
+replace 'H264/AVC' 'H264';
+replace '0x0' '';
+replace '__' '_';
+replace '__' '_';
+
+
+// Replace all illegal file name characters
+replace '<' '(';
+replace '>' ')';
+//replace '…' '...';
+replace '...' '_';
+replace '.' '_';
+replace ':' '_';
+replace '"' '_';
+replace '/' '_';
+replace '/' '_';
+replace '\' '_';
+replace '|' '_';
+replace '?' '_';
+replace '*' '_';
+replace '@' '_';
+replace '__' '_';
+replace '__' '_';
+
+// Throwing away all this shit if we're dealing with credits
+//if (EpisodeType is Credits)
+//if (OldFilename contains 'NCED' or OldFilename contains 'NCOP')
+//  filename set OldFilename;
+
+destination set '/mnt/multimedia/ANIME/';
+
+// Creating folder
+
+if (Restricted)
+    subfolder add 'Hentai ';
+else if (AnimeType is Movie)
+    subfolder add 'Movies ';
+else
+    subfolder add 'Series ';
+    
+if (SubLanguages has English or EpisodeType is Credits or EpisodeType is Trailer)
+    subfolder add '[SUB]/';
+else if (DubLanguages has English)
+    subfolder add '[DUB]/';
+else if (SubLanguages and not SubLanguages has English and not SubLanguages has Norwegian)
+    subfolder add '[SUB-UNK]/';
+else if (SubLanguages and not SubLanguages has English)
+    subfolder add '[SUB-NOR]/';
+else
+    subfolder add '[RAW]/';
+
+subfolder add rxreplace(AnimeTitle, '([<>:""/\\|?*….@]|[^\u0000-\u007F])+', '_') ' [' AnimeID ']';
